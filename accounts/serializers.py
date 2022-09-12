@@ -72,3 +72,11 @@ class GetAllScoreSerializer(serializers.ModelSerializer):
         model = AllScore
         fields = '__all__'
 
+
+class GetStatisticTokenSerializer(serializers.ModelSerializer):
+    kid = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    total_score = serializers.IntegerField()
+
+    class Meta:
+        model = AllScore
+        fields = '__all__'

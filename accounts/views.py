@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 import secrets
 from accounts.models import User, Children, AllScore, ShareToken
-from accounts.serializers import RegisterSerializer, CreateTokenSerializer, ChildSerializer, GetAllScoreSerializer
+from accounts.serializers import RegisterSerializer, CreateTokenSerializer, ChildSerializer, GetAllScoreSerializer, GetStatisticTokenSerializer
 from kiddsvit.settings import DOMEIN_NAME
 
 
@@ -44,5 +44,13 @@ def get_list_score(request):
 def make_token(request, children_id: int):
     children = Children.objects.filter(parent_id=request.user.pk, id=children_id)
     token = ShareToken.objects.create(children=children.first(), token=secrets.token_urlsafe())
-    return Response({'url': f'{DOMEIN_NAME}account/{token.token}'})
+    return Response({'url': f'{DOMEIN_NAME}accounts/get_children_by_token/?token={token.token}'})
 
+
+@csrf_exempt
+@api_view(['GET'])
+def get_static_token(request):
+    children = ShareToken.objects.filter(token=request.GET.get('token'))
+    queryset = AllScore.objects.filter(kid=children.first().children).first()
+    serializer = GetStatisticTokenSerializer(queryset)
+    return Response(serializer.data)
