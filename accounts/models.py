@@ -17,9 +17,17 @@ class Children(models.Model):
     name = models.CharField(max_length=20)
     age = models.IntegerField()
     gender = models.CharField(max_length=10)
-    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='child')
+    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='childrens')
+
+    def assign_to_course(self, course: object):
+        self.course_rels.create(course=course)
+        for task in course.tasks.all():
+            self.children_task_progress_rels.create(task=task) # TODO Bulk create
 
     def __str__(self):
+        return self.name
+
+    def __repr__(self):
         return self.name
 
 
@@ -27,7 +35,7 @@ class AllScore(models.Model):
     class Meta:
         db_table = 'accounts_children_scores'
 
-    kid = models.ForeignKey(Children, on_delete=models.CASCADE, related_name='children_score')
+    kid = models.OneToOneField(Children, on_delete=models.CASCADE, related_name='children_score')
     total_score = models.IntegerField(default=0)
 
     def add_score(self, score: int) -> None:

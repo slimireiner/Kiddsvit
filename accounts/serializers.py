@@ -80,3 +80,7 @@ class GetStatisticTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = AllScore
         fields = '__all__'
+
+
+class GetStatisticSerializer(serializers.Serializer):
+    children_id = serializers.IntegerField(required=True)

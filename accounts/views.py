@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 import secrets
 from accounts.models import User, Children, AllScore, ShareToken
-from accounts.serializers import RegisterSerializer, CreateTokenSerializer, ChildSerializer, GetAllScoreSerializer, GetStatisticTokenSerializer
+from accounts.serializers import RegisterSerializer, CreateTokenSerializer, ChildSerializer, GetAllScoreSerializer, \
+    GetStatisticTokenSerializer, GetStatisticSerializer
 from kiddsvit.settings import DOMEIN_NAME
 
 
@@ -42,9 +43,13 @@ def get_list_score(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def make_token(request, children_id: int):
-    children = Children.objects.filter(parent_id=request.user.pk, id=children_id)
-    token = ShareToken.objects.create(children=children.first(), token=secrets.token_urlsafe())
-    return Response({'url': f'{DOMEIN_NAME}accounts/get_children_by_token/?token={token.token}'})
+    serializer = GetStatisticSerializer(data={'children_id': children_id})
+    if serializer.is_valid():
+        children = Children.objects.filter(parent_id=request.user.pk, id=serializer.data['children_id'])
+        token = ShareToken.objects.create(children=children.first(), token=secrets.token_urlsafe())
+        return Response({'url': f'{DOMEIN_NAME}accounts/get_children_by_token/?token={token.token}'})
+    else:
+        return Response(status=304)
 
 
 @csrf_exempt
