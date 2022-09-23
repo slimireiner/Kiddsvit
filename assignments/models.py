@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db import models
 
-from accounts.models import Children
+from accounts.models import ChildrenProfile
 
 
 class Course(models.Model):
@@ -38,10 +38,10 @@ class TaskProgress(models.Model):
         ('done', 'Done')
     )
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='progress')
-    created_ad = models.DateTimeField(default=datetime.now())
+    created_ad = models.DateTimeField(null=True, default=None)
+    finished_ad = models.DateTimeField(null=True, default=None)
     task_status = models.CharField(max_length=50, choices=statuses, default=statuses[0][0])
-    children = models.ForeignKey(Children, on_delete=models.CASCADE, related_name='children_task_progress_rels')
-
+    children = models.ForeignKey(ChildrenProfile, on_delete=models.CASCADE, related_name='children_task_progress_rels')
 
     def __str__(self):
         return self.task.name
@@ -56,9 +56,17 @@ class TaskProgress(models.Model):
             raise Exception('Bad status')
         self.save(update_fields=['task_status'])
 
+    def is_all_tasks_done(self):
+        tasks = TaskProgress.objects.filter(children=self.children_id, task__course_id=self.task.course_id).all()
+        return all([task.task_status == 'done' for task in tasks])
+
 
 class ChildrenCourseRelation(models.Model):
-    children = models.ForeignKey(Children, on_delete=models.CASCADE, related_name='course_rels')
+    children = models.ForeignKey(ChildrenProfile, on_delete=models.CASCADE, related_name='course_rels')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='children_rels')
-    created_ad = models.DateTimeField(auto_now_add=True)
+    created_ad = models.DateTimeField(null=True, default=None)
     finished_ad = models.DateTimeField(null=True, default=None)
+
+    def finish(self):
+        self.finished_ad = datetime.now()
+        self.save(update_fields=['finished_ad'])

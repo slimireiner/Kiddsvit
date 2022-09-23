@@ -133,3 +133,4 @@ REST_FRAMEWORK = {
 }
 
 DOMEIN_NAME = 'http://127.0.0.1:8000/'
+ADMIN_HADER = 'KIDDISVIT administration panel'

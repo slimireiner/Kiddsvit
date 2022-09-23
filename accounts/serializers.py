@@ -1,11 +1,9 @@
-import secrets
-
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from accounts.models import User, Children, AllScore, ShareToken
+from accounts.models import User, ChildrenProfile, AllScore, ShareToken
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -20,7 +18,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'password', 'email']
         extra_kwargs = {
-            'username': {'required': True}
+            'username': {'required': True},
+            'email': {'required': True}
         }
 
     def create(self, validated_data):
@@ -38,48 +37,19 @@ class CreateTokenSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super(CreateTokenSerializer, cls).get_token(user)
-        token['username'] = user.username
+        token['email'] = user.email
         return token
 
 
-class ChildSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(required=True)
-    parent = serializers.SlugRelatedField(slug_field='id', queryset=User.objects, required=True)
+class RegisterChildrenSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     age = serializers.IntegerField()
     gender = serializers.CharField()
-
-    class Meta:
-        model = Children
-        fields = '__all__'
-
-    def create(self, validated_data):
-        child = Children.objects.create(
-            name=validated_data['name'],
-            parent=validated_data['parent'],
-            age=validated_data['age'],
-            gender=validated_data['gender'],
-        )
-        score = AllScore.objects.create(kid=child)
-        score.save()
-        return child
-
-
-class GetAllScoreSerializer(serializers.ModelSerializer):
-    kid = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    total_score = serializers.IntegerField()
-
-    class Meta:
-        model = AllScore
-        fields = '__all__'
-
-
-class GetStatisticTokenSerializer(serializers.ModelSerializer):
-    kid = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    total_score = serializers.IntegerField()
-
-    class Meta:
-        model = AllScore
-        fields = '__all__'
 
 
 class GetStatisticSerializer(serializers.Serializer):
