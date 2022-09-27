@@ -26,6 +26,7 @@ class Task(models.Model):
     name = models.CharField(max_length=50)
     score = models.IntegerField(default=0)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='tasks')
+    content = models.TextField()
 
     def __str__(self):
         return self.name

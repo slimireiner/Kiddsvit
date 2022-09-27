@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -37,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'assignments',
-    'rest_framework'
+    'rest_framework',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -133,4 +136,14 @@ REST_FRAMEWORK = {
 }
 
 DOMEIN_NAME = 'http://127.0.0.1:8000/'
+
 ADMIN_HADER = 'KIDDISVIT administration panel'
+
+STATIC_URL = 'static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+CKEDITOR_UPLOAD_PATH = 'upload/'
